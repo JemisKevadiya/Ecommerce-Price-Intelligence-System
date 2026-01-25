@@ -4,4 +4,6 @@ numpy
 scikit-learn
 joblib
 matplotlib
--e .
+catboost
+xgboost
+#-e .
