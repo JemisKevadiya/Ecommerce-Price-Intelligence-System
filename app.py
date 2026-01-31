@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import numpy as np
 import pandas as pd
 import dill
@@ -7,15 +7,17 @@ from sklearn.preprocessing import StandardScaler
 from src.pipeline.predict_pipeline import PredictPipeline, CustomData
 
 application = Flask(__name__)
+app = application
 
-app=application
 
-## Route for Home Page
+# ---------------- HOME PAGE ----------------
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/predict', methods=['GET','POST'])
+
+# ---------------- HTML PREDICTION ----------------
+@app.route('/predict', methods=['GET', 'POST'])
 def predict_datapoint():
     if request.method == 'GET':
         return render_template('home.html')
@@ -28,15 +30,40 @@ def predict_datapoint():
             test_preparation_course=request.form.get('test_preparation_course'),
             reading_score=float(request.form.get('reading_score')),
             writing_score=float(request.form.get('writing_score'))
-
         )
+
         pred_df = data.get_data_as_data_frame()
-        print(pred_df)
+        prediction = PredictPipeline().predict(pred_df)
 
-        predict_pipeline = PredictPipeline()
-        results = predict_pipeline.predict(pred_df)
-        
-        return render_template('home.html', results=results[0])
+        return render_template('home.html', results=prediction[0])
 
-if __name__=="__main__":
-    app.run(host='0.0.0.0', debug=True)
+
+# ---------------- API FOR STREAMLIT ----------------
+@app.route('/predict_api', methods=['POST'])
+def predict_api():
+    try:
+        form = request.form
+
+        data = CustomData(
+            gender=form.get('gender'),
+            race_ethnicity=form.get('ethnicity'),
+            parental_level_of_education=form.get('parental_level_of_education'),
+            lunch=form.get('lunch'),
+            test_preparation_course=form.get('test_preparation_course'),
+            reading_score=float(form.get('reading_score', 0)),
+            writing_score=float(form.get('writing_score', 0))
+        )
+
+        pred_df = data.get_data_as_data_frame()
+        prediction = PredictPipeline().predict(pred_df)
+
+        return jsonify({"prediction": float(prediction[0])})
+
+    except Exception as e:
+        print("ERROR", e)
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------- RUN APP (ONLY ONCE) ----------------
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
