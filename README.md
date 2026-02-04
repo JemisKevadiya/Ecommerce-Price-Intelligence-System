@@ -2,7 +2,7 @@
 
 ## Student Exam Performance Indicator
 
-This project implements a complete **Machine Learning pipeline** to predict **student exam performance** based on demographic and educational factors. It provides multiple interfaces to interact with the trained model, including **FastAPI** and **Streamlit**.
+This project implements a complete **Machine Learning pipeline** to predict **student exam performance** based on demographic and educational factors. It provides multiple interfaces to interact with the trained model, including **Flask** and **Streamlit**.
 
 ---
 
